@@ -1,0 +1,11 @@
+{
+  "id": "VideoGen_999",
+  "mode": "local",
+  "modelConfig": {
+    "type": "videoGen",
+    "param": {},
+    "video": "/path/to/video/xxxxx.mp4",
+    "audio": "/path/to/audio/xxxxx.wav"
+  },
+  "setting": {}
+}

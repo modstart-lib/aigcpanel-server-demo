@@ -1,0 +1,12 @@
+{
+  "id": "SoundClone_999",
+  "mode": "local",
+  "modelConfig": {
+    "type": "soundClone",
+    "param": {},
+    "text": "你好",
+    "promptAudio": "/path/to/audio/xxxxx.wav",
+    "promptText": "参考音频提示文字"
+  },
+  "setting": {}
+}

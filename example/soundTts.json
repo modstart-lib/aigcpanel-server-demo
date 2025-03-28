@@ -1,0 +1,10 @@
+{
+  "id": "SoundTts_999",
+  "mode": "local",
+  "modelConfig": {
+    "type": "soundTts",
+    "param": {},
+    "text": "你好"
+  },
+  "setting": {}
+}
