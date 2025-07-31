@@ -1,3 +1,5 @@
 .idea/
 _aienv/
 /_cache/
+/config-last.json
+__pycache__/

@@ -1,6 +1,6 @@
 {
   "name": "server-demo",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "title": "示例模型",
   "description": "模型描述",
   "deviceDescription": "设备描述",
@@ -9,7 +9,7 @@
   "serverRequire": "*",
   "entry": "__EasyServer__",
   "easyServer": {
-    "entry": "./_aienv/bin/python",
+    "entry": ".\\_aienv\\python.exe",
     "entryArgs": [
       "run.py",
       "${CONFIG}"

@@ -7,6 +7,9 @@ import os
 
 # 解析输入配置文件
 config = json.loads(open(sys.argv[1], 'r').read())
+# 保存文件到临时文件，方便调试
+with open('config-last.json', 'w') as f:
+    f.write(json.dumps(config, indent=4, ensure_ascii=False))
 
 def cacheRandom(ext):
     cacheRoot = os.path.abspath('_cache')
