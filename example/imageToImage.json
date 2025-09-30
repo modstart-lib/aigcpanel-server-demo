@@ -1,0 +1,10 @@
+{
+  "id":"xxx",
+  "mode":"local",
+  "modelConfig":{
+    "text":"A fantasy landscape with castles and dragons",
+    "image":"/path/to/image.png",
+    "param":{}
+  },
+  "setting":{}
+}
