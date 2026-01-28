@@ -8,6 +8,19 @@
   "platformArch": "arm64",
   "serverRequire": "*",
   "entry": "__EasyServer__",
+  "launcher": {
+    "entry": "./_aienv/bin/python",
+    "entryArgs": [
+      "-u",
+      "-m",
+      "run",
+      "${CONFIG}"
+    ],
+    "envs": [
+      "AAA=111",
+      "BBB=222"
+    ]
+  },
   "easyServer": {
     "entry": "./_aienv/bin/python",
     "entryArgs": [
@@ -19,7 +32,10 @@
   "functions": [
     "videoGen",
     "soundTts",
-    "soundClone"
+    "soundClone",
+    "asr",
+    "textToImage",
+    "imageToImage"
   ],
   "settings": []
 }

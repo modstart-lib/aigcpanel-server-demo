@@ -22,6 +22,16 @@ def printResult(key, value):
     print('AigcPanelRunResult', {key: value})
     print(f'AigcPanelRunResult[{config["id"]}][' + base64.b64encode(json.dumps({key: value}).encode()).decode() + ']')
 
+def resultUrl(url):
+    if os.getenv('AIGCPANEL_LAUNCHER_API_MODE', 'false').lower() == 'true':
+        ext = url.split('.')[-1]
+        newPath = os.path.join('launcher-data', str(time.time()) + '.' + ext)
+        if not os.path.exists('launcher-data'):
+            os.makedirs('launcher-data')
+        shutil.copy(url, newPath)
+        return newPath
+    return url
+
 # 公共输出
 ## 输出基本信息
 ## 设备类型 cpu / gpu
@@ -33,66 +43,85 @@ printResult('DeviceMemorySize', 24)
 ## CUDA 版本
 printResult('CudaVersion', '12.8')
 
+modelConfig = config.get('modelConfig', {})
+
 ########### 语音合成 ###########
 ## 参考 ./_example/soundTts.json
-print('正在合成', 'config=', config)
-time.sleep(30)
-resultPath = cacheRandom('wav')
-shutil.copy('./example/nihao.wav', resultPath)
-print('合成完成', resultPath)
-## 语音合成输出结果
-printResult('url', resultPath)
+if modelConfig.get('type') == 'soundTts':
+    print('正在合成', 'config=', config)
+    time.sleep(10)
+    resultPath = cacheRandom('wav')
+    shutil.copy('./example/nihao.wav', resultPath)
+    print('合成完成', resultPath)
+    ## 语音合成输出结果
+    printResult('url', resultUrl(resultPath))
 ########### 语音合成 ###########
 
 ########### 语音克隆 ###########
 ## 参考 ./_example/soundClone.json
-print('正在克隆', 'config=', config)
-time.sleep(3)
-resultPath = cacheRandom('wav')
-shutil.copy('./example/nihao.wav', resultPath)
-print('克隆完成', resultPath)
-## 语音克隆输出结果
-printResult('url', resultPath)
+elif modelConfig.get('type') == 'soundClone':
+    print('正在克隆', 'config=', config)
+    time.sleep(10)
+    resultPath = cacheRandom('wav')
+    shutil.copy('./example/nihao.wav', resultPath)
+    print('克隆完成', resultPath)
+    ## 语音克隆输出结果
+    printResult('url', resultUrl(resultPath))
 ########### 语音克隆 ###########
 
 ########### 视频合成 ###########
 ## 参考 ./_example/videoGen.json
-print('正在生成', 'config=', config)
-time.sleep(3)
-resultPath = cacheRandom('mp4')
-shutil.copy('./example/short.mp4', resultPath)
-print('生成完成', resultPath)
-## 视频合成输出结果
-printResult('url', resultPath)
+elif modelConfig.get('type') == 'videoGen':
+    print('正在生成', 'config=', config)
+    time.sleep(10)
+    resultPath = cacheRandom('mp4')
+    shutil.copy('./example/short.mp4', resultPath)
+    print('生成完成', resultPath)
+    ## 视频合成输出结果
+    printResult('url', resultUrl(resultPath))
 ########### 视频合成 ###########
 
 ########### 语音识别 ###########
-## 参考 ./_example/soundAsr.json
-print('正在识别', 'config=', config)
-time.sleep(3)
-resultText = '你好，欢迎使用AIGC面板。'
-print('识别完成', resultText)
-## 语音识别输出结果
-printResult('text', resultText)
+## 参考 ./_example/asr.json
+elif modelConfig.get('type') == 'asr':
+    print('正在识别', 'config=', config)
+    time.sleep(10)
+    ## 语音识别输出结果
+    records = []
+    records.append({
+        'start': 0.0,
+        'end': 3.0,
+        'text': '你好，欢迎使用AIGCPanel。'
+    })
+    records.append({
+        'start': 3.0,
+        'end': 6.0,
+        'text': '这是第二句识别内容。'
+    })
+    printResult('records', records)
 ########### 语音识别 ###########
 
 ########### 文生图 ###########
 ## 参考 ./_example/textToImage.json
-print('正在生成', 'config=', config)
-time.sleep(3)
-resultPath = cacheRandom('png')
-shutil.copy('./example/1.png', resultPath)
-## 文生图输出结果
-printResult('url', resultPath)
+elif modelConfig.get('type') == 'textToImage':
+    print('正在生成', 'config=', config)
+    time.sleep(10)
+    resultPath = cacheRandom('png')
+    shutil.copy('./example/1.png', resultPath)
+    ## 文生图输出结果
+    printResult('url', resultUrl(resultPath))
 ########### 文生图 ###########
 
 ########### 图生图 ###########
 ## 参考 ./_example/imageToImage.json
-print('正在生成', 'config=', config)
-time.sleep(3)
-resultPath = cacheRandom('png')
-shutil.copy('./example/1.png', resultPath)
-## 图生图输出结果
-printResult('url', resultPath)
+elif modelConfig.get('type') == 'imageToImage':
+    print('正在生成', 'config=', config)
+    time.sleep(10)
+    resultPath = cacheRandom('png')
+    shutil.copy('./example/1.png', resultPath)
+    ## 图生图输出结果
+    printResult('url', resultUrl(resultPath))
 ########### 图生图 ###########
 
+else :
+    print('不支持的模型类型', modelConfig.get('type'))

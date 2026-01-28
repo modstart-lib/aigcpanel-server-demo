@@ -1,9 +1,9 @@
 {
-  "id":"xxx",
-  "mode":"local",
-  "modelConfig":{
-    "audio":"/path/to/audio.wav",
-    "param":{}
+  "id": "Asr_xxx",
+  "mode": "local",
+  "modelConfig": {
+    "audio": "/path/to/audio.wav",
+    "param": {}
   },
-  "setting":{}
+  "setting": {}
 }

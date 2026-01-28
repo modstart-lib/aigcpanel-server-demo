@@ -3,3 +3,7 @@ _aienv/
 /_cache/
 /config-last.json
 __pycache__/
+/launcher
+/_launcher_logs/
+*.pid
+/launcher-data/
