@@ -46,43 +46,43 @@ printResult('CudaVersion', '12.8')
 modelConfig = config.get('modelConfig', {})
 
 ########### 语音合成 ###########
-## 参考 ./_example/soundTts.json
+## 参考 ./example-config/soundTts.json
 if modelConfig.get('type') == 'soundTts':
     print('正在合成', 'config=', config)
     time.sleep(10)
     resultPath = cacheRandom('wav')
-    shutil.copy('./example/nihao.wav', resultPath)
+    shutil.copy('./example-file/nihao.wav', resultPath)
     print('合成完成', resultPath)
     ## 语音合成输出结果
     printResult('url', resultUrl(resultPath))
 ########### 语音合成 ###########
 
 ########### 语音克隆 ###########
-## 参考 ./_example/soundClone.json
+## 参考 ./example-config/soundClone.json
 elif modelConfig.get('type') == 'soundClone':
     print('正在克隆', 'config=', config)
     time.sleep(10)
     resultPath = cacheRandom('wav')
-    shutil.copy('./example/nihao.wav', resultPath)
+    shutil.copy('./example-file/nihao.wav', resultPath)
     print('克隆完成', resultPath)
     ## 语音克隆输出结果
     printResult('url', resultUrl(resultPath))
 ########### 语音克隆 ###########
 
 ########### 视频合成 ###########
-## 参考 ./_example/videoGen.json
+## 参考 ./example-config/videoGen.json
 elif modelConfig.get('type') == 'videoGen':
     print('正在生成', 'config=', config)
     time.sleep(10)
     resultPath = cacheRandom('mp4')
-    shutil.copy('./example/short.mp4', resultPath)
+    shutil.copy('./example-file/short.mp4', resultPath)
     print('生成完成', resultPath)
     ## 视频合成输出结果
     printResult('url', resultUrl(resultPath))
 ########### 视频合成 ###########
 
 ########### 语音识别 ###########
-## 参考 ./_example/asr.json
+## 参考 ./example-config/asr.json
 elif modelConfig.get('type') == 'asr':
     print('正在识别', 'config=', config)
     time.sleep(10)
@@ -102,23 +102,23 @@ elif modelConfig.get('type') == 'asr':
 ########### 语音识别 ###########
 
 ########### 文生图 ###########
-## 参考 ./_example/textToImage.json
+## 参考 ./example-config/textToImage.json
 elif modelConfig.get('type') == 'textToImage':
     print('正在生成', 'config=', config)
     time.sleep(10)
     resultPath = cacheRandom('png')
-    shutil.copy('./example/1.png', resultPath)
+    shutil.copy('./example-file/1.png', resultPath)
     ## 文生图输出结果
     printResult('url', resultUrl(resultPath))
 ########### 文生图 ###########
 
 ########### 图生图 ###########
-## 参考 ./_example/imageToImage.json
+## 参考 ./example-config/imageToImage.json
 elif modelConfig.get('type') == 'imageToImage':
     print('正在生成', 'config=', config)
     time.sleep(10)
     resultPath = cacheRandom('png')
-    shutil.copy('./example/1.png', resultPath)
+    shutil.copy('./example-file/1.png', resultPath)
     ## 图生图输出结果
     printResult('url', resultUrl(resultPath))
 ########### 图生图 ###########

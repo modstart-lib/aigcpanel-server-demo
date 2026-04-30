@@ -42,7 +42,8 @@ python run.py
 - `run.py`：主程序入口 🏠
 - `requirements.txt`：依赖包列表 📦
 - `config.json`：主配置文件 ⚙️
-- `example/`：示例数据与配置 📊
+- `example-config/`：示例配置文件 📊
+- `example-file/`：示例媒体文件 🎬
 
 ## 📄 License
 
