@@ -7,3 +7,5 @@ __pycache__/
 /_launcher_logs/
 *.pid
 /launcher-data/
+auth.json
+auth.*.json

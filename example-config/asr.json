@@ -3,7 +3,8 @@
   "mode": "local",
   "modelConfig": {
     "audio": "/path/to/audio.wav",
-    "param": {}
+    "param": {},
+    "type": "asr"
   },
   "setting": {}
 }

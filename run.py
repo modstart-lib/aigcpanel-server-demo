@@ -25,9 +25,10 @@ def printResult(key, value):
 def resultUrl(url):
     if os.getenv('AIGCPANEL_LAUNCHER_API_MODE', 'false').lower() == 'true':
         ext = url.split('.')[-1]
-        newPath = os.path.join('launcher-data', str(time.time()) + '.' + ext)
-        if not os.path.exists('launcher-data'):
-            os.makedirs('launcher-data')
+        launcherDataRoot = os.path.abspath('launcher-data')
+        if not os.path.exists(launcherDataRoot):
+            os.makedirs(launcherDataRoot)
+        newPath = os.path.join(launcherDataRoot, str(time.time()) + '.' + ext)
         shutil.copy(url, newPath)
         return newPath
     return url
@@ -49,7 +50,7 @@ modelConfig = config.get('modelConfig', {})
 ## 参考 ./example-config/soundTts.json
 if modelConfig.get('type') == 'soundTts':
     print('正在合成', 'config=', config)
-    time.sleep(10)
+    time.sleep(1)
     resultPath = cacheRandom('wav')
     shutil.copy('./example-file/nihao.wav', resultPath)
     print('合成完成', resultPath)
@@ -61,7 +62,7 @@ if modelConfig.get('type') == 'soundTts':
 ## 参考 ./example-config/soundClone.json
 elif modelConfig.get('type') == 'soundClone':
     print('正在克隆', 'config=', config)
-    time.sleep(10)
+    time.sleep(1)
     resultPath = cacheRandom('wav')
     shutil.copy('./example-file/nihao.wav', resultPath)
     print('克隆完成', resultPath)
@@ -73,7 +74,7 @@ elif modelConfig.get('type') == 'soundClone':
 ## 参考 ./example-config/videoGen.json
 elif modelConfig.get('type') == 'videoGen':
     print('正在生成', 'config=', config)
-    time.sleep(10)
+    time.sleep(1)
     resultPath = cacheRandom('mp4')
     shutil.copy('./example-file/short.mp4', resultPath)
     print('生成完成', resultPath)
@@ -85,13 +86,13 @@ elif modelConfig.get('type') == 'videoGen':
 ## 参考 ./example-config/asr.json
 elif modelConfig.get('type') == 'asr':
     print('正在识别', 'config=', config)
-    time.sleep(10)
+    time.sleep(1)
     ## 语音识别输出结果
     records = []
     records.append({
         'start': 0.0,
         'end': 3.0,
-        'text': '你好，欢迎使用AIGCPanel。'
+        'text': '你好，欢迎使用 AIGCPanel。'
     })
     records.append({
         'start': 3.0,
@@ -105,7 +106,7 @@ elif modelConfig.get('type') == 'asr':
 ## 参考 ./example-config/textToImage.json
 elif modelConfig.get('type') == 'textToImage':
     print('正在生成', 'config=', config)
-    time.sleep(10)
+    time.sleep(1)
     resultPath = cacheRandom('png')
     shutil.copy('./example-file/1.png', resultPath)
     ## 文生图输出结果
@@ -116,7 +117,7 @@ elif modelConfig.get('type') == 'textToImage':
 ## 参考 ./example-config/imageToImage.json
 elif modelConfig.get('type') == 'imageToImage':
     print('正在生成', 'config=', config)
-    time.sleep(10)
+    time.sleep(1)
     resultPath = cacheRandom('png')
     shutil.copy('./example-file/1.png', resultPath)
     ## 图生图输出结果
