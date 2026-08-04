@@ -1,0 +1,13 @@
+{
+  "id":"xxx",
+  "mode":"local",
+  "modelConfig":{
+    "type": "imageToVideo",
+    "images": [
+      "/path/to/image/xxxx.png"
+    ],
+    "text": "The cat starts running",
+    "param": {}
+  },
+  "setting":{}
+}

@@ -124,5 +124,27 @@ elif modelConfig.get('type') == 'imageToImage':
     printResult('url', resultUrl(resultPath))
 ########### 图生图 ###########
 
+########### 文生视频 ###########
+## 参考 ./example-config/textToVideo.json
+elif modelConfig.get('type') == 'textToVideo':
+    print('正在生成', 'config=', config)
+    time.sleep(1)
+    resultPath = cacheRandom('mp4')
+    shutil.copy('./example-file/short.mp4', resultPath)
+    ## 文生视频输出结果
+    printResult('url', resultUrl(resultPath))
+########### 文生视频 ###########
+
+########### 图生视频 ###########
+## 参考 ./example-config/imageToVideo.json
+elif modelConfig.get('type') == 'imageToVideo':
+    print('正在生成', 'config=', config)
+    time.sleep(1)
+    resultPath = cacheRandom('mp4')
+    shutil.copy('./example-file/short.mp4', resultPath)
+    ## 图生视频输出结果
+    printResult('url', resultUrl(resultPath))
+########### 图生视频 ###########
+
 else :
     print('不支持的模型类型', modelConfig.get('type'))

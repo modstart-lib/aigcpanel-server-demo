@@ -1,0 +1,10 @@
+{
+  "id":"xxx",
+  "mode":"local",
+  "modelConfig":{
+    "type": "textToVideo",
+    "text": "A cat running in the garden",
+    "param": {}
+  },
+  "setting":{}
+}
