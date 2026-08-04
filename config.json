@@ -35,7 +35,9 @@
     "soundClone",
     "asr",
     "textToImage",
-    "imageToImage"
+    "imageToImage",
+    "textToVideo",
+    "imageToVideo"
   ],
   "settings": []
 }
