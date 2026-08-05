@@ -2,6 +2,7 @@
   "id":"xxx",
   "mode":"local",
   "modelConfig":{
+    "type": "textToImage",
     "text":"A fantasy landscape with castles and dragons",
     "param":{}
   },

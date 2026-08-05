@@ -1,12 +1,16 @@
 {
   "name": "server-demo",
-  "version": "1.0.0",
-  "title": "示例模型",
+  "version": "1.1.0",
+  "title": "示例模型（队列模式）",
   "description": "模型描述",
   "deviceDescription": "设备描述",
   "platformName": "osx",
   "platformArch": "arm64",
   "serverRequire": "*",
+  "mode": {
+    "type": "watch",
+    "watchDelay": 60
+  },
   "entry": "__EasyServer__",
   "launcher": {
     "entry": "./_aienv/bin/python",

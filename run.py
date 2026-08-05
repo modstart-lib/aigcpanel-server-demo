@@ -1,150 +1,169 @@
-import json
-import base64
-import shutil
-import sys
-import time
+# -*- coding: utf-8 -*-
+"""
+Queue-based model server demo.
+
+Entry: python -u run.py <config.json>    (or: python -u -m run <config.json>)
+
+This module demonstrates the "continuous queue" pattern used by real
+AIGCPanel model integrations:
+
+    config, ROOT_DIR = aigcpanelserver.appPrepare(name)
+    while config := aigcpanelserver.watchNext():
+        ... process one task ...
+    aigcpanelserver.end()
+
+Flow:
+1. `appPrepare()` loads the initial task config from argv[1] and sets up
+   the global environment.
+2. The `while watchNext()` loop processes the initial task, then keeps
+   polling the `aigcpanel-queue/` directory for new `*.queue.json` files
+   (keep-alive window = `mode.watchDelay` seconds in config.json).
+   The process stays alive between tasks, so a heavy model is loaded once
+   and reused across all queued tasks.
+3. When no new task arrives within `watchDelay`, `watchNext()` returns
+   None, the loop exits and `end()` cleans up.
+
+The lightweight SDK lives in `aigcpanelserver.py` (a self-contained
+re-implementation of the official `_aigcpanel.lib` module).
+"""
+
 import os
+import shutil
+import time
 
-# 解析输入配置文件
-config = json.loads(open(sys.argv[1], 'r').read())
-# 保存文件到临时文件，方便调试
-with open('config-last.json', 'w') as f:
-    f.write(json.dumps(config, indent=4, ensure_ascii=False))
+import aigcpanelserver
 
-def cacheRandom(ext):
-    cacheRoot = os.path.abspath('_cache')
-    if not os.path.exists(cacheRoot):
-        os.makedirs(cacheRoot)
-    return os.path.join(cacheRoot, str(time.time()) + '.' + ext)
 
-def printResult(key, value):
-    global config
-    print('AigcPanelRunResult', {key: value})
-    print(f'AigcPanelRunResult[{config["id"]}][' + base64.b64encode(json.dumps({key: value}).encode()).decode() + ']')
+def run():
+    config, ROOT_DIR = aigcpanelserver.appPrepare('server-demo')
+    modelConfig = config['modelConfig']
 
-def resultUrl(url):
-    if os.getenv('AIGCPANEL_LAUNCHER_API_MODE', 'false').lower() == 'true':
-        ext = url.split('.')[-1]
-        launcherDataRoot = os.path.abspath('launcher-data')
-        if not os.path.exists(launcherDataRoot):
-            os.makedirs(launcherDataRoot)
-        newPath = os.path.join(launcherDataRoot, str(time.time()) + '.' + ext)
-        shutil.copy(url, newPath)
-        return newPath
-    return url
+    # Demo assets used to mock real model inference results
+    exampleFileDir = os.path.join(ROOT_DIR, 'example-file')
+    soundFile = os.path.join(exampleFileDir, 'nihao.wav')
+    videoFile = os.path.join(exampleFileDir, 'short.mp4')
+    imageFile = os.path.join(exampleFileDir, '1.png')
 
-# 公共输出
-## 输出基本信息
-## 设备类型 cpu / gpu
-printResult('Device', 'cpu')
-## 设备名称
-printResult('DeviceName', 'Nvidia GeForce RTX 4090')
-## 设备内存大小，单位 GB
-printResult('DeviceMemorySize', 24)
-## CUDA 版本
-printResult('CudaVersion', '12.8')
+    # NOTE: In a real project, load the (heavy) model HERE once and reuse it
+    # across all queued tasks. That is exactly why the queue mode exists:
+    # the process stays alive so the model is not reloaded for every task.
 
-modelConfig = config.get('modelConfig', {})
+    while config := aigcpanelserver.watchNext():
+        modelConfig = config['modelConfig']
+        # Report device info (device type/name/memory) for every task
+        aigcpanelserver.resultEnv()
 
-########### 语音合成 ###########
-## 参考 ./example-config/soundTts.json
-if modelConfig.get('type') == 'soundTts':
-    print('正在合成', 'config=', config)
-    time.sleep(1)
-    resultPath = cacheRandom('wav')
-    shutil.copy('./example-file/nihao.wav', resultPath)
-    print('合成完成', resultPath)
-    ## 语音合成输出结果
-    printResult('url', resultUrl(resultPath))
-########### 语音合成 ###########
+        # Normalize optional params
+        if 'param' not in modelConfig:
+            modelConfig['param'] = {}
+        if 'seed' not in modelConfig['param']:
+            modelConfig['param']['seed'] = 0
 
-########### 语音克隆 ###########
-## 参考 ./example-config/soundClone.json
-elif modelConfig.get('type') == 'soundClone':
-    print('正在克隆', 'config=', config)
-    time.sleep(1)
-    resultPath = cacheRandom('wav')
-    shutil.copy('./example-file/nihao.wav', resultPath)
-    print('克隆完成', resultPath)
-    ## 语音克隆输出结果
-    printResult('url', resultUrl(resultPath))
-########### 语音克隆 ###########
+        aigcpanelserver.logInfo('TaskBegin', {
+            'id': config['id'],
+            'type': modelConfig.get('type'),
+        })
 
-########### 视频合成 ###########
-## 参考 ./example-config/videoGen.json
-elif modelConfig.get('type') == 'videoGen':
-    print('正在生成', 'config=', config)
-    time.sleep(1)
-    resultPath = cacheRandom('mp4')
-    shutil.copy('./example-file/short.mp4', resultPath)
-    print('生成完成', resultPath)
-    ## 视频合成输出结果
-    printResult('url', resultUrl(resultPath))
-########### 视频合成 ###########
+        ########### 语音合成 soundTts ###########
+        # See ./example-config/soundTts.json
+        if modelConfig.get('type') == 'soundTts':
+            text = aigcpanelserver.filterText(modelConfig['text'])
+            time.sleep(1)  # mock inference time
+            resultPath = aigcpanelserver.localCacheRandomPath('wav')
+            shutil.copy(soundFile, resultPath)
+            aigcpanelserver.result({'url': aigcpanelserver.urlForResult(resultPath)})
+            aigcpanelserver.resultEnd()
+            continue
 
-########### 语音识别 ###########
-## 参考 ./example-config/asr.json
-elif modelConfig.get('type') == 'asr':
-    print('正在识别', 'config=', config)
-    time.sleep(1)
-    ## 语音识别输出结果
-    records = []
-    records.append({
-        'start': 0.0,
-        'end': 3.0,
-        'text': '你好，欢迎使用 AIGCPanel。'
-    })
-    records.append({
-        'start': 3.0,
-        'end': 6.0,
-        'text': '这是第二句识别内容。'
-    })
-    printResult('records', records)
-########### 语音识别 ###########
+        ########### 语音克隆 soundClone ###########
+        # See ./example-config/soundClone.json
+        if modelConfig.get('type') == 'soundClone':
+            text = aigcpanelserver.filterText(modelConfig['text'])
+            # Download/cache the prompt audio when it is a remote URL
+            promptAudio = aigcpanelserver.localCache(modelConfig['promptAudio'])
+            time.sleep(1)  # mock inference time
+            resultPath = aigcpanelserver.localCacheRandomPath('wav')
+            shutil.copy(soundFile, resultPath)
+            aigcpanelserver.result({'url': aigcpanelserver.urlForResult(resultPath)})
+            aigcpanelserver.resultEnd()
+            continue
 
-########### 文生图 ###########
-## 参考 ./example-config/textToImage.json
-elif modelConfig.get('type') == 'textToImage':
-    print('正在生成', 'config=', config)
-    time.sleep(1)
-    resultPath = cacheRandom('png')
-    shutil.copy('./example-file/1.png', resultPath)
-    ## 文生图输出结果
-    printResult('url', resultUrl(resultPath))
-########### 文生图 ###########
+        ########### 视频合成 videoGen ###########
+        # See ./example-config/videoGen.json
+        if modelConfig.get('type') == 'videoGen':
+            aigcpanelserver.localCache(modelConfig['video'])
+            aigcpanelserver.localCache(modelConfig['audio'])
+            time.sleep(1)  # mock inference time
+            resultPath = aigcpanelserver.localCacheRandomPath('mp4')
+            shutil.copy(videoFile, resultPath)
+            aigcpanelserver.result({
+                'url': aigcpanelserver.urlForResult(resultPath),
+                'Duration': 1.0,
+            })
+            aigcpanelserver.resultEnd()
+            continue
 
-########### 图生图 ###########
-## 参考 ./example-config/imageToImage.json
-elif modelConfig.get('type') == 'imageToImage':
-    print('正在生成', 'config=', config)
-    time.sleep(1)
-    resultPath = cacheRandom('png')
-    shutil.copy('./example-file/1.png', resultPath)
-    ## 图生图输出结果
-    printResult('url', resultUrl(resultPath))
-########### 图生图 ###########
+        ########### 语音识别 asr ###########
+        # See ./example-config/asr.json
+        if modelConfig.get('type') == 'asr':
+            aigcpanelserver.localCache(modelConfig['audio'])
+            time.sleep(1)  # mock inference time
+            records = [
+                {'start': 0.0, 'end': 3.0, 'text': '你好，欢迎使用 AIGCPanel。'},
+                {'start': 3.0, 'end': 6.0, 'text': '这是第二句识别内容。'},
+            ]
+            aigcpanelserver.result({'records': records})
+            aigcpanelserver.resultEnd()
+            continue
 
-########### 文生视频 ###########
-## 参考 ./example-config/textToVideo.json
-elif modelConfig.get('type') == 'textToVideo':
-    print('正在生成', 'config=', config)
-    time.sleep(1)
-    resultPath = cacheRandom('mp4')
-    shutil.copy('./example-file/short.mp4', resultPath)
-    ## 文生视频输出结果
-    printResult('url', resultUrl(resultPath))
-########### 文生视频 ###########
+        ########### 文生图 textToImage ###########
+        # See ./example-config/textToImage.json
+        if modelConfig.get('type') == 'textToImage':
+            time.sleep(1)  # mock inference time
+            resultPath = aigcpanelserver.localCacheRandomPath('png')
+            shutil.copy(imageFile, resultPath)
+            aigcpanelserver.result({'url': aigcpanelserver.urlForResult(resultPath)})
+            aigcpanelserver.resultEnd()
+            continue
 
-########### 图生视频 ###########
-## 参考 ./example-config/imageToVideo.json
-elif modelConfig.get('type') == 'imageToVideo':
-    print('正在生成', 'config=', config)
-    time.sleep(1)
-    resultPath = cacheRandom('mp4')
-    shutil.copy('./example-file/short.mp4', resultPath)
-    ## 图生视频输出结果
-    printResult('url', resultUrl(resultPath))
-########### 图生视频 ###########
+        ########### 图生图 imageToImage ###########
+        # See ./example-config/imageToImage.json
+        if modelConfig.get('type') == 'imageToImage':
+            aigcpanelserver.localCache(modelConfig['image'])
+            time.sleep(1)  # mock inference time
+            resultPath = aigcpanelserver.localCacheRandomPath('png')
+            shutil.copy(imageFile, resultPath)
+            aigcpanelserver.result({'url': aigcpanelserver.urlForResult(resultPath)})
+            aigcpanelserver.resultEnd()
+            continue
 
-else :
-    print('不支持的模型类型', modelConfig.get('type'))
+        ########### 文生视频 textToVideo ###########
+        # See ./example-config/textToVideo.json
+        if modelConfig.get('type') == 'textToVideo':
+            time.sleep(1)  # mock inference time
+            resultPath = aigcpanelserver.localCacheRandomPath('mp4')
+            shutil.copy(videoFile, resultPath)
+            aigcpanelserver.result({'url': aigcpanelserver.urlForResult(resultPath)})
+            aigcpanelserver.resultEnd()
+            continue
+
+        ########### 图生视频 imageToVideo ###########
+        # See ./example-config/imageToVideo.json
+        if modelConfig.get('type') == 'imageToVideo':
+            images = modelConfig.get('images', [])
+            for image in images:
+                aigcpanelserver.localCache(image)
+            time.sleep(1)  # mock inference time
+            resultPath = aigcpanelserver.localCacheRandomPath('mp4')
+            shutil.copy(videoFile, resultPath)
+            aigcpanelserver.result({'url': aigcpanelserver.urlForResult(resultPath)})
+            aigcpanelserver.resultEnd()
+            continue
+
+        raise Exception('未知的模型类型: {}'.format(modelConfig.get('type')))
+
+    aigcpanelserver.end()
+
+
+if __name__ == '__main__':
+    run()

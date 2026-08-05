@@ -9,3 +9,10 @@ __pycache__/
 /launcher-data/
 auth.json
 auth.*.json
+
+# OpenChamber
+_temp/
+DEV_*.md
+
+# queue mode runtime directory
+/aigcpanel-queue/
