@@ -285,15 +285,26 @@ def verify_installed(cli, name, version):
     print("功能:", ", ".join(f.get("name") for f in funcs))
 
 
-def run_case(cli, model_key, label, args):
-    """model-call: 调用单个模型功能，返回是否通过。"""
+def run_case(cli, model_key, label, args, skip_on_unknown=False):
+    """model-call: 调用单个模型功能。
+
+    Returns:
+      True  通过
+      False 失败
+      None  跳过（平台不支持该 function，见 skip_on_unknown）
+    """
     cmd = [cli, "model-call", "--model", model_key, "--timeout", str(TIMEOUT)] + args
     proc = run(cmd)
     if proc.returncode == 0:
         ok(label)
         return True
+    output = (proc.stdout or "") + (proc.stderr or "")
+    if skip_on_unknown and "Unknown function" in output:
+        print(f"  {YELLOW}[SKIP]{NC} {label}（当前 AigcPanel 平台 model-call 不支持，"
+              f"已由 tests/queue.py 覆盖）")
+        return None
     ko(label)
-    for line in ((proc.stdout or "") + (proc.stderr or "")).splitlines():
+    for line in output.splitlines():
         print("    " + line)
     return False
 
@@ -396,14 +407,29 @@ def main():
             "--images", json.dumps([png]),
             "--prompt", "让画面动起来，云朵缓缓飘动",
         ]),
+        ("通用模型 generalImage", [
+            "--function", "generalImage",
+            "--prompt", "AIGCPanel 通用模型测试，一张星空下的山脉",
+            "--count", "2",
+        ]),
     ]
+    # general 功能平台 model-call 接口尚未实现，遇到 "Unknown function"
+    # 时自动跳过（不视为失败）；已由 tests/queue.py 直接运行 run.py 覆盖。
+    skip_on_unknown_labels = {"通用模型 generalImage"}
 
     passed = 0
     failed = 0
+    skipped = 0
     for label, args in test_cases:
         print()
         print(f"{YELLOW}---- {label} ----{NC}")
-        if run_case(cli, model_key, label, args):
+        result = run_case(
+            cli, model_key, label, args,
+            skip_on_unknown=label in skip_on_unknown_labels,
+        )
+        if result is None:
+            skipped += 1
+        elif result:
             passed += 1
         else:
             failed += 1
@@ -412,7 +438,7 @@ def main():
     print()
     print("═══════════════════════════════════════════════════════")
     info("==> [4/4] 测试汇总")
-    print(f"  通过: {passed}   失败: {failed}")
+    print(f"  通过: {passed}   失败: {failed}   跳过: {skipped}")
     print("═══════════════════════════════════════════════════════")
     if failed > 0:
         sys.exit(1)
