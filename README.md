@@ -101,6 +101,23 @@ python tests/single.py
 python tests/queue.py
 ```
 
+## 🚀 一键加载 + 功能测试（通过 AIGCPanel CLI）
+
+```shell
+python3 launchtest.py
+```
+
+实现为单文件 `launchtest.py`，全部基于 aigcpanel CLI 完成：
+
+1. `aigcpanel server-install --dir .`：将当前目录模型加载到 AigcPanel 的已安装模型列表
+2. `aigcpanel model-list`：校验模型已成功加载
+3. `aigcpanel model-call`：依次调用全部功能（`soundTts` / `soundClone` / `videoGen` / `asr` / `textToImage` / `imageToImage` / `textToVideo` / `imageToVideo`）并等待结果
+
+自动行为：
+
+- **AigcPanel 未运行时自动启动**：从默认安装位置查找（macOS 的 `/Applications/AigcPanel.app`、Windows 的 `%LOCALAPPDATA%` 安装目录、Linux 的 `/opt` 等），启动后等待 HTTP 服务就绪（最多 60s）
+- **CLI 自动定位**：在与当前项目同级的 aigcpanel 源码目录（`dist-cli`）中自动查找 `aigcpanel` 命令，缺失时用 go 自动构建当前平台版本
+
 ## 🧩 支持的模型功能
 
 | 功能 | 配置示例 | 输出 |

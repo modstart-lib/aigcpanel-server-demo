@@ -160,6 +160,43 @@ def run():
             aigcpanelserver.resultEnd()
             continue
 
+        ########### 通用模型 general ###########
+        # See ./example-config/general.json
+        # 系统无法识别的模型可在 config.json 的 general 数组中声明能力
+        # （param 参数定义 + result 输出定义），平台小工具"通用模型"据此渲染
+        # 表单并调用。本示例以 type=generalImage 处理：
+        #   - 输出 images（多张图片）、text（文字说明）、files（附加文件）
+        #   字段名与 config.json 中 general[].result 的 name 一致，
+        #   平台端按 result 定义从 stdout 结果中解析并展示。
+        if modelConfig.get('type') == 'generalImage':
+            param = modelConfig.get('param') or {}
+            prompt = str(param.get('prompt') or '')
+            try:
+                count = int(param.get('count', 2))
+            except (ValueError, TypeError):
+                count = 2
+            count = max(1, min(count, 5))
+            time.sleep(1)  # mock inference time
+            # 多张图片输出
+            images = []
+            for i in range(count):
+                p = aigcpanelserver.localCacheRandomPath('png')
+                shutil.copy(imageFile, p)
+                images.append(aigcpanelserver.urlForResult(p))
+            # 文字输出
+            text = '通用模型示例：已生成 {} 张图片，提示词：{}'.format(count, prompt)
+            # 附加文件输出
+            txtPath = aigcpanelserver.localCacheRandomPath('txt')
+            with open(txtPath, 'w', encoding='utf-8') as f:
+                f.write(text)
+            aigcpanelserver.result({
+                'images': images,
+                'text': text,
+                'files': [aigcpanelserver.urlForResult(txtPath)],
+            })
+            aigcpanelserver.resultEnd()
+            continue
+
         raise Exception('未知的模型类型: {}'.format(modelConfig.get('type')))
 
     aigcpanelserver.end()

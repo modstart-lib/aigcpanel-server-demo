@@ -60,6 +60,9 @@ def main():
             promptText='参考音频提示文字')),
         ('003_asr.queue.json', taskConfig(
             'QueueAsr', 'asr', audio=os.path.join(EXAMPLE_FILE_DIR, 'nihao.wav'))),
+        ('004_general.queue.json', taskConfig(
+            'QueueGeneral', 'generalImage',
+            param={'prompt': '通用模型测试', 'count': 3})),
     ]
     expectedIds = ['QueueSeed'] + [c['id'] for _, c in queuedTasks]
 
@@ -105,10 +108,25 @@ def main():
                 except Exception:
                     continue
                 if match.group(1) not in found:
-                    found[match.group(1)] = data
-                    print('[TEST] result:', match.group(1), '->', data)
-                if isinstance(data, dict) and data.get('url'):
-                    urlPaths.add(data['url'])
+                    # 仅记录业务结果（url/images/files/text/records 等），
+                    # 忽略 resultEnv 输出的 Device 设备信息
+                    if isinstance(data, dict) and any(
+                        k in data
+                        for k in ('url', 'images', 'files', 'text', 'records', 'error', 'msg')
+                    ):
+                        found[match.group(1)] = data
+                        print('[TEST] result:', match.group(1), '->', data)
+                # 收集结果中的全部文件路径：url（单文件）/ images（图片数组）/ files（文件数组）
+                if isinstance(data, dict):
+                    for urlKey in ('url',):
+                        if data.get(urlKey):
+                            urlPaths.add(data[urlKey])
+                    for urlKey in ('images', 'files'):
+                        urls = data.get(urlKey) or []
+                        if isinstance(urls, list):
+                            for u in urls:
+                                if u:
+                                    urlPaths.add(u)
             if set(found) >= set(expectedIds):
                 break
             if proc.poll() is not None:
@@ -122,6 +140,14 @@ def main():
         for urlPath in urlPaths:
             assert os.path.isfile(urlPath), 'result file missing: {}'.format(urlPath)
             print('[TEST] result file exists:', urlPath)
+        # 通用模型结果校验：images（多张）+ text（文字）+ files（附加文件）
+        generalResult = found.get('QueueGeneral') or {}
+        assert generalResult.get('images'), 'general result missing images'
+        assert len(generalResult['images']) == 3, 'general images count mismatch'
+        assert generalResult.get('text'), 'general result missing text'
+        assert generalResult.get('files'), 'general result missing files'
+        print('[TEST] general result OK: {} images, text={!r}, files={}'.format(
+            len(generalResult['images']), generalResult.get('text'), len(generalResult['files'])))
         print('[TEST] PASS: {} tasks processed'.format(len(expectedIds)))
     finally:
         proc.terminate()

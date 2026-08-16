@@ -1,0 +1,12 @@
+{
+  "id": "xxx",
+  "mode": "local",
+  "modelConfig": {
+    "type": "generalImage",
+    "param": {
+      "prompt": "一张星空下的山脉",
+      "count": 2
+    }
+  },
+  "setting": {}
+}

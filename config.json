@@ -41,7 +41,49 @@
     "textToImage",
     "imageToImage",
     "textToVideo",
-    "imageToVideo"
+    "imageToVideo",
+    "general"
   ],
-  "settings": []
+  "settings": [],
+  "general": [
+    {
+      "name": "generalImage",
+      "title": "通用图片生成（示例）",
+      "description": "演示通用模型：接收任意参数（prompt/count），输出多张图片 + 文字说明 + 附加文件。",
+      "param": [
+        {
+          "name": "prompt",
+          "title": "提示词",
+          "type": "textarea",
+          "defaultValue": "一张星空下的山脉"
+        },
+        {
+          "name": "count",
+          "title": "生成数量",
+          "type": "number",
+          "defaultValue": 2,
+          "min": 1,
+          "max": 5,
+          "step": 1
+        }
+      ],
+      "result": [
+        {
+          "type": "image",
+          "name": "images",
+          "title": "生成图片"
+        },
+        {
+          "type": "text",
+          "name": "text",
+          "title": "附加说明"
+        },
+        {
+          "type": "file",
+          "name": "files",
+          "title": "附加文件"
+        }
+      ]
+    }
+  ]
 }
