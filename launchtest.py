@@ -36,8 +36,11 @@ CONFIG_FILE = os.path.join(ROOT, "config.json")
 TIMEOUT = 300  # 单次 model-call 轮询超时（秒）
 APP_WAIT_SEC = 60  # 自动启动 AigcPanel 后等待 HTTP 服务就绪的超时（秒）
 
-# 如果 ~/env/runtime/aigcpanel 目录存在，则设置 AIGCPANEL_DATA_ROOT
-_data_root_candidate = os.path.expanduser("~/env/runtime/aigcpanel")
+# 如果 ~/data/env/runtime/aigcpanel 目录存在，则设置 AIGCPANEL_DATA_ROOT
+# （与 ss-start-aigcpanel 使用的数据目录保持一致）
+_data_root_candidate = os.path.expanduser("~/data/env/runtime/aigcpanel")
+if not os.path.isdir(_data_root_candidate):
+    _data_root_candidate = os.path.expanduser("~/env/runtime/aigcpanel")
 DATA_ROOT = _data_root_candidate if os.path.isdir(_data_root_candidate) else None
 
 RED = "\033[0;31m"
@@ -420,15 +423,15 @@ def main():
             "--images", json.dumps([png]),
             "--prompt", "让画面动起来，云朵缓缓飘动",
         ]),
-        ("通用模型 generalImage", [
-            "--function", "generalImage",
+        ("通用模型 general", [
+            "--function", "general",
+            "--functionName", "generalImage",
             "--prompt", "AIGCPanel 通用模型测试，一张星空下的山脉",
             "--count", "2",
         ]),
     ]
-    # general 功能平台 model-call 接口尚未实现，遇到 "Unknown function"
-    # 时自动跳过（不视为失败）；已由 tests/queue.py 直接运行 run.py 覆盖。
-    skip_on_unknown_labels = {"通用模型 generalImage"}
+    # general 功能平台 model-call 接口已支持，所有功能均需测试
+    skip_on_unknown_labels = set()
 
     passed = 0
     failed = 0
