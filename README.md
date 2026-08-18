@@ -130,6 +130,7 @@ python3 launchtest.py
 | 图生图 imageToImage | `example-config/imageToImage.json` | `url` |
 | 文生视频 textToVideo | `example-config/textToVideo.json` | `url` |
 | 图生视频 imageToVideo | `example-config/imageToVideo.json` | `url` |
+| 通用模型 general | `example-config/general.json` | `file` / `files` / `text`（按 config.json `general[].result` 定义展示） |
 
 本示例不加载真实模型，用 `example-file/` 中的媒体文件模拟推理结果；接入真实模型时，只需在 `run.py` 的循环外加载一次模型，替换各分支中的模拟代码即可。
 

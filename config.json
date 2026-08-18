@@ -69,7 +69,12 @@
       ],
       "result": [
         {
-          "type": "image",
+          "type": "file",
+          "name": "image",
+          "title": "封面图片"
+        },
+        {
+          "type": "files",
           "name": "images",
           "title": "生成图片"
         },
@@ -79,7 +84,7 @@
           "title": "附加说明"
         },
         {
-          "type": "file",
+          "type": "files",
           "name": "files",
           "title": "附加文件"
         }

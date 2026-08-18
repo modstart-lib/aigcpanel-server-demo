@@ -5,9 +5,9 @@
 ### Improvements / 改进
 
 - 通用模型示例：config.json 新增 `general` 数组定义通用能力（参数 param + 输出
-  result，输出类型支持 image/file/text 且支持多个）；`run.py` 新增 generalImage
-  通用调用处理（返回多张图片 + 文字说明 + 附加文件），供平台小工具"通用模型"
-  按 config.json 定义直接调用与展示结果
+  result，输出类型仅三种 text / file / files，支持多个）；`run.py` 新增 generalImage
+  通用调用处理（返回封面图 + 多张图片 + 文字说明 + 附加文件，覆盖三种输出类型），
+  供平台小工具"通用模型"按 config.json 定义直接调用与展示结果
 - 测试：队列测试新增通用模型任务，校验多输出（images/text/files）文件真实存在
 - Added auth.json patterns to `.gitignore` to prevent authentication credentials from being committed
   在 `.gitignore` 中添加 auth.json 模式，防止身份验证凭据被提交

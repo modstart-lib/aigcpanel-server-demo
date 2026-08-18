@@ -140,14 +140,19 @@ def main():
         for urlPath in urlPaths:
             assert os.path.isfile(urlPath), 'result file missing: {}'.format(urlPath)
             print('[TEST] result file exists:', urlPath)
-        # 通用模型结果校验：images（多张）+ text（文字）+ files（附加文件）
+        # 通用模型结果校验：image（单文件）+ images（多张）+ text（文字）+ files（附加文件）
+        # 输出类型覆盖三种：file（单文件）/ files（多文件）/ text（文本）
         generalResult = found.get('QueueGeneral') or {}
+        assert generalResult.get('image'), 'general result missing image'
+        assert os.path.isfile(generalResult['image']), \
+            'general image file missing: {}'.format(generalResult['image'])
         assert generalResult.get('images'), 'general result missing images'
         assert len(generalResult['images']) == 3, 'general images count mismatch'
         assert generalResult.get('text'), 'general result missing text'
         assert generalResult.get('files'), 'general result missing files'
-        print('[TEST] general result OK: {} images, text={!r}, files={}'.format(
-            len(generalResult['images']), generalResult.get('text'), len(generalResult['files'])))
+        print('[TEST] general result OK: image={}, {} images, text={!r}, files={}'.format(
+            generalResult['image'], len(generalResult['images']), generalResult.get('text'),
+            len(generalResult['files'])))
         print('[TEST] PASS: {} tasks processed'.format(len(expectedIds)))
     finally:
         proc.terminate()

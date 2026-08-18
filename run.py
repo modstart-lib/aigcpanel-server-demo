@@ -164,10 +164,12 @@ def run():
         # See ./example-config/general.json
         # 系统无法识别的模型可在 config.json 的 general 数组中声明能力
         # （param 参数定义 + result 输出定义），平台小工具"通用模型"据此渲染
-        # 表单并调用。本示例以 type=generalImage 处理：
-        #   - 输出 images（多张图片）、text（文字说明）、files（附加文件）
-        #   字段名与 config.json 中 general[].result 的 name 一致，
-        #   平台端按 result 定义从 stdout 结果中解析并展示。
+        # 表单并调用。本示例以 type=generalImage 处理，输出类型仅三种：
+        #   - file：单文件（如封面图片，值为文件路径字符串）
+        #   - files：多文件（如多张图片/附加文件，值为文件路径数组）
+        #   - text：文本（如文字说明，值为字符串）
+        # 字段名与 config.json 中 general[].result 的 name 一致，
+        # 平台端按 result 定义从 stdout 结果中解析并展示。
         if modelConfig.get('type') == 'generalImage':
             param = modelConfig.get('param') or {}
             prompt = str(param.get('prompt') or '')
@@ -190,6 +192,7 @@ def run():
             with open(txtPath, 'w', encoding='utf-8') as f:
                 f.write(text)
             aigcpanelserver.result({
+                'image': images[0],
                 'images': images,
                 'text': text,
                 'files': [aigcpanelserver.urlForResult(txtPath)],
