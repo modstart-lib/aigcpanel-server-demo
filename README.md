@@ -109,9 +109,9 @@ python3 launchtest.py
 
 实现为单文件 `launchtest.py`，全部基于 aigcpanel CLI 完成：
 
-1. `aigcpanel server-install --dir .`：将当前目录模型加载到 AigcPanel 的已安装模型列表
-2. `aigcpanel model-list`：校验模型已成功加载
-3. `aigcpanel model-call`：依次调用全部功能（`soundTts` / `soundClone` / `videoGen` / `asr` / `textToImage` / `imageToImage` / `textToVideo` / `imageToVideo`）并等待结果
+1. `aigcpanel serverInstall --dir .`：将当前目录模型加载到 AigcPanel 的已安装服务列表
+2. `aigcpanel serverList`：校验服务已成功加载
+3. `aigcpanel serverCall`：依次调用全部功能（`soundTts` / `soundClone` / `videoGen` / `asr` / `textToImage` / `imageToImage` / `textToVideo` / `imageToVideo`）并等待结果
 
 自动行为：
 

@@ -5,9 +5,9 @@ launchtest.py — AIGCPanel 模型一键「加载 + 功能测试」
 
 全部基于 aigcpanel CLI 实现：
 
-  1. server-install   将当前目录模型加载到 AigcPanel 已安装模型列表
-  2. model-list       校验模型已成功加载
-  3. model-call       依次调用模型全部功能（soundTts / soundClone / videoGen /
+  1. serverInstall   将当前目录模型加载到 AigcPanel 已安装服务列表
+  2. serverList       校验服务已成功加载
+  3. serverCall       依次调用服务全部功能（soundTts / soundClone / videoGen /
                       asr / textToImage / imageToImage / textToVideo /
                       imageToVideo）并等待结果
 
@@ -33,7 +33,7 @@ import time
 ROOT = os.path.dirname(os.path.abspath(__file__))
 EXAMPLE_DIR = os.path.join(ROOT, "example-file")
 CONFIG_FILE = os.path.join(ROOT, "config.json")
-TIMEOUT = 300  # 单次 model-call 轮询超时（秒）
+TIMEOUT = 300  # 单次 serverCall 轮询超时（秒）
 APP_WAIT_SEC = 60  # 自动启动 AigcPanel 后等待 HTTP 服务就绪的超时（秒）
 
 # 如果 ~/data/env/runtime/aigcpanel 目录存在，则设置 AIGCPANEL_DATA_ROOT
@@ -264,9 +264,9 @@ def load_cli_json(proc, what):
 
 
 def install_model(cli):
-    """server-install: 加载当前目录模型到 AigcPanel。"""
-    proc = run([cli, "server-install", "--dir", ROOT])
-    result = load_cli_json(proc, "server-install")
+    """serverInstall: 加载当前目录模型到 AigcPanel。"""
+    proc = run([cli, "serverInstall", "--dir", ROOT])
+    result = load_cli_json(proc, "serverInstall")
     if result.get("code") != 0:
         print(json.dumps(result, ensure_ascii=False, indent=2))
         msg = str(result.get("msg") or "")
@@ -276,16 +276,16 @@ def install_model(cli):
                 "\n当前 AigcPanel 版本过旧，不支持 /api/server/install 接口。\n"
                 "请升级到包含该接口的版本（或使用 aigcpanel 源码的最新开发版）。"
             )
-        raise SystemExit(f"错误: server-install 失败: {msg}{hint}")
+        raise SystemExit(f"错误: serverInstall 失败: {msg}{hint}")
     d = result.get("data") or {}
     print(f"  已安装: {d.get('name')} ({d.get('title', '')}) v{d.get('version')}")
     print("  功能: " + ", ".join(d.get("functions") or []))
 
 
 def verify_installed(cli, name, version):
-    """model-list: 校验模型已出现在已安装列表。"""
-    proc = run([cli, "model-list"])
-    result = load_cli_json(proc, "model-list")
+    """serverList: 校验服务已出现在已安装列表。"""
+    proc = run([cli, "serverList"])
+    result = load_cli_json(proc, "serverList")
     models = result.get("data") or []
     hit = [
         m for m in models
@@ -293,28 +293,28 @@ def verify_installed(cli, name, version):
     ]
     if not hit:
         print("  当前已安装:", ", ".join(f"{m.get('name')} v{m.get('version')}" for m in models))
-        raise SystemExit("错误: 模型未出现在 model-list")
+        raise SystemExit("错误: 服务未出现在 serverList")
     funcs = hit[0].get("functions") or []
     print(f"已加载: {name} v{version}")
     print("功能:", ", ".join(f.get("name") for f in funcs))
 
 
 def run_case(cli, model_key, label, args, skip_on_unknown=False):
-    """model-call: 调用单个模型功能。
+    """serverCall: 调用单个服务功能。
 
     Returns:
       True  通过
       False 失败
       None  跳过（平台不支持该 function，见 skip_on_unknown）
     """
-    cmd = [cli, "model-call", "--model", model_key, "--timeout", str(TIMEOUT)] + args
+    cmd = [cli, "serverCall", "--server", model_key, "--timeout", str(TIMEOUT)] + args
     proc = run(cmd)
     if proc.returncode == 0:
         ok(label)
         return True
     output = (proc.stdout or "") + (proc.stderr or "")
     if skip_on_unknown and "Unknown function" in output:
-        print(f"  {YELLOW}[SKIP]{NC} {label}（当前 AigcPanel 平台 model-call 不支持，"
+        print(f"  {YELLOW}[SKIP]{NC} {label}（当前 AigcPanel 平台 serverCall 不支持，"
               f"已由 tests/queue.py 覆盖）")
         return None
     ko(label)
@@ -425,12 +425,12 @@ def main():
         ]),
         ("通用模型 general", [
             "--function", "general",
-            "--functionName", "generalImage",
+            "--generalName", "generalImage",
             "--prompt", "AIGCPanel 通用模型测试，一张星空下的山脉",
             "--count", "2",
         ]),
     ]
-    # general 功能平台 model-call 接口已支持，所有功能均需测试
+    # general 功能平台 serverCall 接口已支持，所有功能均需测试
     skip_on_unknown_labels = set()
 
     passed = 0

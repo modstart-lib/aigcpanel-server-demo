@@ -4,6 +4,10 @@
 
 ### Improvements / 改进
 
+- 测试：`launchtest.py` 适配 AIGCPanel CLI 命令改版——`server-install` / `model-list` /
+  `model-call` 统一为 server 系列 `serverInstall` / `serverList` / `serverCall`，参数由
+  `--model` 改为 `--server`（`serverCall --server name|version`）；`--functionName`
+  更新为 `--generalName`（选择通用模型能力）
 - 通用模型示例：config.json 新增 `general` 数组定义通用能力（参数 param + 输出
   result，输出类型仅三种 text / file / files，支持多个）；`run.py` 新增 generalImage
   通用调用处理（返回封面图 + 多张图片 + 文字说明 + 附加文件，覆盖三种输出类型），
