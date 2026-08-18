@@ -36,6 +36,10 @@ CONFIG_FILE = os.path.join(ROOT, "config.json")
 TIMEOUT = 300  # 单次 model-call 轮询超时（秒）
 APP_WAIT_SEC = 60  # 自动启动 AigcPanel 后等待 HTTP 服务就绪的超时（秒）
 
+# 如果 ~/env/runtime/aigcpanel 目录存在，则设置 AIGCPANEL_DATA_ROOT
+_data_root_candidate = os.path.expanduser("~/env/runtime/aigcpanel")
+DATA_ROOT = _data_root_candidate if os.path.isdir(_data_root_candidate) else None
+
 RED = "\033[0;31m"
 GREEN = "\033[0;32m"
 YELLOW = "\033[0;33m"
@@ -57,6 +61,9 @@ def info(msg):
 
 def run(cmd, cwd=None, check=False):
     """Run a command, capture stdout/stderr (UTF-8, tolerant decode)."""
+    env = dict(os.environ) if DATA_ROOT else None
+    if env is not None:
+        env["AIGCPANEL_DATA_ROOT"] = DATA_ROOT
     try:
         return subprocess.run(
             cmd,
@@ -66,6 +73,7 @@ def run(cmd, cwd=None, check=False):
             encoding="utf-8",
             errors="replace",
             check=check,
+            env=env,
         )
     except FileNotFoundError as e:
         raise SystemExit(f"错误: 找不到命令 {cmd[0]}，请确认已安装并加入 PATH")
@@ -152,6 +160,9 @@ def ensure_cli():
 def find_cli_auth():
     """在 AigcPanel 的 userData 位置查找 cli-auth.json，返回路径或 None。"""
     candidates = []
+    # 优先检查 AIGCPANEL_DATA_ROOT 路径
+    if DATA_ROOT:
+        candidates.append(os.path.join(DATA_ROOT, "cli-auth.json"))
     if sys.platform == "darwin":
         candidates.append(
             os.path.expanduser("~/Library/Application Support/aigcpanel/cli-auth.json")
@@ -322,6 +333,8 @@ def main():
     print("═══════════════════════════════════════════════════════")
     print("  AIGCPanel 模型加载 + 功能测试")
     print(f"  模型: {model_name} v{model_version}  (目录: {ROOT})")
+    if DATA_ROOT:
+        print(f"  AIGCPANEL_DATA_ROOT: {DATA_ROOT}")
     print("═══════════════════════════════════════════════════════")
 
     # ── 1. 定位 CLI ─────────────────────────────────────────────────────
